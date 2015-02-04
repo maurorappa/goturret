@@ -1,2 +1,2 @@
 # goturret
-Control your USB turret from Go
+Control your USB turret from Go.
