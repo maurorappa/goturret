@@ -6,25 +6,31 @@ import (
 	"time"
 )
 
+// Type of commands (control different parts of the turret).
 const (
-	CMD_TYPE_TURRET = 0x02
-	CMD_TYPE_LED    = 0x03
+	CmdTypeTurret = 0x02
+	CmdTypeLight  = 0x03
+	CmdTypeDone   = 0x99
 )
 
+// All the turret (motor) commands.
 const (
-	CMD_TURRET_DOWN  = 0x01
-	CMD_TURRET_UP    = 0x02
-	CMD_TURRET_LEFT  = 0x04
-	CMD_TURRET_RIGHT = 0x08
-	CMD_TURRET_FIRE  = 0x10
-	CMD_TURRET_STOP  = 0x20
+	CmdTurretDown  = 0x01
+	CmdTurretUp    = 0x02
+	CmdTurretLeft  = 0x04
+	CmdTurretRight = 0x08
+	CmdTurretFire  = 0x10
+	CmdTurretStop  = 0x20
 )
 
+// All the light/LED commands.
 const (
-	CMD_LED_OFF = 0x00
-	CMD_LED_ON  = 0x01
+	CmdLightOff = 0x00
+	CmdLightOn  = 0x01
 )
 
+// Command contains all the command information needed to be passed to a
+// turret.
 type Command struct {
 	Type  byte
 	Value byte

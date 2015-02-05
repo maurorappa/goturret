@@ -7,24 +7,35 @@ import (
 	"time"
 
 	"github.com/truveris/goturret"
+	"github.com/truveris/gousb/usb"
 )
 
 func main() {
-	turrets, err := turret.Find()
+	ctx := usb.NewContext()
+	defer ctx.Close()
+
+	turrets, err := turret.Find(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		for _, t := range turrets {
+			t.Close()
+		}
+	}()
 
-	for _, turret := range turrets {
-		turret.Light(true)
+	for _, t := range turrets {
+		t.BlinkOn(4)
 
-		turret.Left(1 * time.Second)
-		turret.Up(1 * time.Second)
-		turret.Right(1 * time.Second)
-		turret.Down(1 * time.Second)
+		t.Left(1 * time.Second)
+		t.Up(1 * time.Second)
+		t.Right(1 * time.Second)
+		t.Down(1 * time.Second)
 
-		turret.Light(false)
+		t.Light(false)
+	}
 
-		turret.Close()
+	for _, t := range turrets {
+		t.Shutdown()
 	}
 }

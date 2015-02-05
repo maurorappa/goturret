@@ -3,14 +3,19 @@
 package turret
 
 import (
+	"errors"
+
 	"github.com/truveris/gousb/usb"
 )
 
-func Find() ([]*Turret, error) {
-	turrets := make([]*Turret, 0)
+var (
+	errNoDevices = errors.New("no devices found")
+)
 
-	ctx := usb.NewContext()
-	defer ctx.Close()
+// Find returns all the turrets we could find on the system. You must call
+// Close() or Shutdown() for all the turrets returned from this function.
+func Find(ctx *usb.Context) ([]*Turret, error) {
+	var turrets []*Turret
 
 	// ListDevices is used to find the devices to open.
 	devs, err := ctx.ListDevices(func(desc *usb.Descriptor) bool {
@@ -25,29 +30,22 @@ func Find() ([]*Turret, error) {
 		return false
 	})
 
-	// All Devices returned from ListDevices must be closed.
-	defer func() {
-		for _, d := range devs {
-			d.Close()
-		}
-	}()
-
 	// ListDevices can occaionally fail, so be sure to check its return value.
 	if err != nil {
 		return turrets, err
 	}
 
 	if len(devs) == 0 {
-		return turrets, err_no_devices
+		return turrets, errNoDevices
 	}
 
 	for _, dev := range devs {
 		t := NewTurret(dev)
 
 		if dev.Descriptor.Vendor == 0x2123 && dev.Descriptor.Product == 0x1010 {
-			t.Type = DEVICE_TYPE_THUNDER
+			t.Type = DeviceTypeThunder
 		} else if dev.Descriptor.Vendor == 0x0a81 && dev.Descriptor.Product == 0x0701 {
-			t.Type = DEVICE_TYPE_CLASSIC
+			t.Type = DeviceTypeClassic
 		}
 
 		turrets = append(turrets, t)

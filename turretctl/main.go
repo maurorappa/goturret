@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/truveris/goturret"
+	"github.com/truveris/gousb/usb"
 )
 
 func usage() {
@@ -19,7 +20,7 @@ func getShots() int {
 	var shots int
 
 	if len(os.Args) == 3 {
-		shots, err := strconv.ParseUint(os.Args[2], 10, 0)
+		shots, err := strconv.Atoi(os.Args[2])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -61,10 +62,18 @@ func main() {
 
 	cmd = os.Args[1]
 
-	turrets, err := turret.Find()
+	ctx := usb.NewContext()
+	defer ctx.Close()
+
+	turrets, err := turret.Find(ctx)
 	if err != nil {
-		log.Fatal("error: %s", err)
+		log.Fatal("error: ", err)
 	}
+	defer func() {
+		for _, t := range turrets {
+			t.Close()
+		}
+	}()
 
 	for _, t := range turrets {
 		switch cmd {
@@ -99,5 +108,9 @@ func main() {
 		default:
 			log.Fatal("error: unknown command")
 		}
+	}
+
+	for _, t := range turrets {
+		t.Shutdown()
 	}
 }
