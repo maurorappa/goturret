@@ -42,6 +42,10 @@ func Find(ctx *usb.Context) ([]*Turret, error) {
 	for _, dev := range devs {
 		t := NewTurret(dev)
 
+		if runtime.GOOS == "linux" {
+			dev.DetachKernelDriver(0)
+		}
+
 		if dev.Descriptor.Vendor == 0x2123 && dev.Descriptor.Product == 0x1010 {
 			t.Type = DeviceTypeThunder
 		} else if dev.Descriptor.Vendor == 0x0a81 && dev.Descriptor.Product == 0x0701 {
