@@ -126,8 +126,8 @@ func (t *Turret) Light(on bool) {
 // with a lit light.
 func (t *Turret) BlinkOn(times int) {
 	for i := 0; i < times; i++ {
-		t.QueueCommand(CmdTypeLight, CmdLightOn, 200*time.Millisecond)
 		t.QueueCommand(CmdTypeLight, CmdLightOff, 200*time.Millisecond)
+		t.QueueCommand(CmdTypeLight, CmdLightOn, 200*time.Millisecond)
 	}
 }
 
@@ -135,8 +135,8 @@ func (t *Turret) BlinkOn(times int) {
 // with a turned off light.
 func (t *Turret) BlinkOff(times int) {
 	for i := 0; i < times; i++ {
-		t.QueueCommand(CmdTypeLight, CmdLightOff, 200*time.Millisecond)
 		t.QueueCommand(CmdTypeLight, CmdLightOn, 200*time.Millisecond)
+		t.QueueCommand(CmdTypeLight, CmdLightOff, 200*time.Millisecond)
 	}
 }
 
