@@ -4,6 +4,7 @@ package turret
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/truveris/gousb/usb"
@@ -175,5 +176,18 @@ func (t *Turret) Reset() {
 func (t *Turret) Fire(shots int) {
 	for i := 0; i < shots; i++ {
 		t.QueueCommand(CmdTypeTurret, CmdTurretFire, 4500*time.Millisecond)
+	}
+}
+
+// HumanReadableType returns the model of the turret in a human readable format.
+func (t *Turret) HumanReadableType() string {
+	switch t.Type {
+	case DeviceTypeThunder:
+		return "Dream Cheeky Thunder"
+	case DeviceTypeClassic:
+		return "Classic"
+	default:
+		name := fmt.Sprintf("Unknown Turret (0x%H:0x%H)", t.Device.Descriptor.Vendor, t.Device.Descriptor.Product)
+		return name
 	}
 }
