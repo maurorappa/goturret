@@ -4,6 +4,7 @@ package turret
 
 import (
 	"errors"
+	"runtime"
 
 	"github.com/truveris/gousb/usb"
 )
