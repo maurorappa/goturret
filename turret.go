@@ -70,6 +70,24 @@ func (t *Turret) QueueCommand(cmdtype, cmd byte, duration time.Duration) {
 	t.Input <- Command{Type: cmdtype, Value: cmd, Duration: duration}
 }
 
+// NormalizeDuration adjust the provided duration to be within reasonable limits.
+// For example, most turrets take 8 seconds to do a full horizontal cycle.
+// Because of that, we can safely limit the maximum horizontal movement
+// duration to 8 seconds.
+func (t *Turret) NormalizeDuration(cmd byte, duration time.Duration) time.Duration {
+	switch cmd {
+	case CmdTurretLeft, CmdTurretRight:
+		if duration > 8*time.Second {
+			duration = 8 * time.Second
+		}
+	case CmdTurretUp, CmdTurretDown:
+		if duration > 2*time.Second {
+			duration = 2 * time.Second
+		}
+	}
+	return duration
+}
+
 // ConsumeCommands is a go routine started by NewTurret which executes the
 // Turret commands sequentially from the Input channel.
 func (t *Turret) ConsumeCommands() {
@@ -79,8 +97,9 @@ func (t *Turret) ConsumeCommands() {
 			return
 		}
 		t.Command(cmd.Type, cmd.Value)
-		if cmd.Duration > 0 {
-			time.Sleep(cmd.Duration)
+		duration := t.NormalizeDuration(cmd.Value, cmd.Duration)
+		if duration > 0 {
+			time.Sleep(duration)
 		}
 	}
 }
