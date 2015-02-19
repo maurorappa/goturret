@@ -157,8 +157,8 @@ func (t *Turret) Stop() {
 // Reset rotates and tilts the turret in the given direction until it gets
 // parked in the leftmost and lowest position.
 func (t *Turret) Reset() {
-	t.Left(8 * time.Second)
 	t.Down(2 * time.Second)
+	t.Left(8 * time.Second)
 }
 
 // Fire one or multiple shots.
