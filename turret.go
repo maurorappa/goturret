@@ -67,11 +67,11 @@ func (t *Turret) NormalizeDuration(cmd byte, duration time.Duration) time.Durati
 	switch cmd {
 	case CmdTurretLeft, CmdTurretRight:
 		if duration > 8*time.Second {
-			duration = 8 * time.Second
+			duration = 6800 * time.Millisecond
 		}
 	case CmdTurretUp, CmdTurretDown:
 		if duration > 2*time.Second {
-			duration = 2 * time.Second
+			duration = 1500 * time.Millisecond
 		}
 	}
 	return duration
