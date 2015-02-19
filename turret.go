@@ -24,8 +24,6 @@ var (
 type Turret struct {
 	*usb.Device
 	Type   int
-	Input  chan Command
-	Done   chan bool
 	Closed bool
 }
 
@@ -34,10 +32,7 @@ func NewTurret(dev *usb.Device) *Turret {
 	t := &Turret{
 		Device: dev,
 		Closed: false,
-		Input:  make(chan Command, 64),
-		Done:   make(chan bool, 0),
 	}
-	go t.ConsumeCommands()
 	return t
 }
 
@@ -64,12 +59,6 @@ func (t *Turret) Command(cmdtype, cmd byte) error {
 	return nil
 }
 
-// QueueCommand schedules a command in the Input channel of this Turret.  This
-// is the prefered way to schedule commands.
-func (t *Turret) QueueCommand(cmdtype, cmd byte, duration time.Duration) {
-	t.Input <- Command{Type: cmdtype, Value: cmd, Duration: duration}
-}
-
 // NormalizeDuration adjust the provided duration to be within reasonable limits.
 // For example, most turrets take 8 seconds to do a full horizontal cycle.
 // Because of that, we can safely limit the maximum horizontal movement
@@ -88,31 +77,13 @@ func (t *Turret) NormalizeDuration(cmd byte, duration time.Duration) time.Durati
 	return duration
 }
 
-// ConsumeCommands is a go routine started by NewTurret which executes the
-// Turret commands sequentially from the Input channel.
-func (t *Turret) ConsumeCommands() {
-	for cmd := range t.Input {
-		if cmd.Type == CmdTypeDone {
-			t.Done <- true
-			return
-		}
-		t.Command(cmd.Type, cmd.Value)
-		duration := t.NormalizeDuration(cmd.Value, cmd.Duration)
-		if duration > 0 {
-			time.Sleep(duration)
-		}
+// TimedCommand executes the given command and wait a little.
+func (t *Turret) TimedCommand(cmdType, cmd byte, duration time.Duration) {
+	t.Command(cmdType, cmd)
+	duration = t.NormalizeDuration(cmd, duration)
+	if duration > 0 {
+		time.Sleep(duration)
 	}
-}
-
-// Shutdown sends a Command to identify the end of the queue, then waits for
-// the ConsumeCommands function to terminate via the Turret Done channel.
-func (t *Turret) Shutdown() {
-	if t.Closed {
-		return
-	}
-	t.QueueCommand(CmdTypeDone, 0, 0)
-	<-t.Done
-	t.Close()
 }
 
 // Close ends the connection to the USB device, closes the Input channel. You
@@ -124,7 +95,6 @@ func (t *Turret) Close() {
 		return
 	}
 	t.Device.Close()
-	close(t.Input)
 	t.Closed = true
 }
 
@@ -138,15 +108,15 @@ func (t *Turret) Light(on bool) {
 		cmd = CmdLightOff
 	}
 
-	t.QueueCommand(CmdTypeLight, cmd, 0)
+	t.TimedCommand(CmdTypeLight, cmd, 0)
 }
 
 // BlinkOn will turn the light of the turret on and off a few times, ending
 // with a lit light.
 func (t *Turret) BlinkOn(times int) {
 	for i := 0; i < times; i++ {
-		t.QueueCommand(CmdTypeLight, CmdLightOff, 200*time.Millisecond)
-		t.QueueCommand(CmdTypeLight, CmdLightOn, 200*time.Millisecond)
+		t.TimedCommand(CmdTypeLight, CmdLightOff, 200*time.Millisecond)
+		t.TimedCommand(CmdTypeLight, CmdLightOn, 200*time.Millisecond)
 	}
 }
 
@@ -154,34 +124,34 @@ func (t *Turret) BlinkOn(times int) {
 // with a turned off light.
 func (t *Turret) BlinkOff(times int) {
 	for i := 0; i < times; i++ {
-		t.QueueCommand(CmdTypeLight, CmdLightOn, 200*time.Millisecond)
-		t.QueueCommand(CmdTypeLight, CmdLightOff, 200*time.Millisecond)
+		t.TimedCommand(CmdTypeLight, CmdLightOn, 200*time.Millisecond)
+		t.TimedCommand(CmdTypeLight, CmdLightOff, 200*time.Millisecond)
 	}
 }
 
 // Left rotates the turret left for the specified duration.
 func (t *Turret) Left(duration time.Duration) {
-	t.QueueCommand(CmdTypeTurret, CmdTurretLeft, duration)
+	t.TimedCommand(CmdTypeTurret, CmdTurretLeft, duration)
 }
 
 // Right rotates the turret right for the specified duration.
 func (t *Turret) Right(duration time.Duration) {
-	t.QueueCommand(CmdTypeTurret, CmdTurretRight, duration)
+	t.TimedCommand(CmdTypeTurret, CmdTurretRight, duration)
 }
 
 // Up tilts the turret up for the specified duration.
 func (t *Turret) Up(duration time.Duration) {
-	t.QueueCommand(CmdTypeTurret, CmdTurretUp, duration)
+	t.TimedCommand(CmdTypeTurret, CmdTurretUp, duration)
 }
 
 // Down tilts the turret down for the specified duration.
 func (t *Turret) Down(duration time.Duration) {
-	t.QueueCommand(CmdTypeTurret, CmdTurretDown, duration)
+	t.TimedCommand(CmdTypeTurret, CmdTurretDown, duration)
 }
 
 // Stop interrupts the turret movements.
 func (t *Turret) Stop() {
-	t.QueueCommand(CmdTypeTurret, CmdTurretStop, 50*time.Millisecond)
+	t.TimedCommand(CmdTypeTurret, CmdTurretStop, 50*time.Millisecond)
 }
 
 // Reset rotates and tilts the turret in the given direction until it gets
@@ -194,7 +164,7 @@ func (t *Turret) Reset() {
 // Fire one or multiple shots.
 func (t *Turret) Fire(shots int) {
 	for i := 0; i < shots; i++ {
-		t.QueueCommand(CmdTypeTurret, CmdTurretFire, 4500*time.Millisecond)
+		t.TimedCommand(CmdTypeTurret, CmdTurretFire, 4500*time.Millisecond)
 	}
 }
 

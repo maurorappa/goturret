@@ -2,10 +2,6 @@
 
 package turret
 
-import (
-	"time"
-)
-
 // Type of commands (control different parts of the turret).
 const (
 	CmdTypeTurret = 0x02
@@ -28,11 +24,3 @@ const (
 	CmdLightOff = 0x00
 	CmdLightOn  = 0x01
 )
-
-// Command contains all the command information needed to be passed to a
-// turret.
-type Command struct {
-	Type  byte
-	Value byte
-	time.Duration
-}
