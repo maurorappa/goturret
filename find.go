@@ -24,6 +24,10 @@ func Find(ctx *usb.Context) ([]*Turret, error) {
 			return true
 		}
 
+		if desc.Vendor == 0x1130 && desc.Product == 0x0202 {
+			return true
+		}
+
 		if desc.Vendor == 0x0a81 && desc.Product == 0x0701 {
 			return true
 		}
