@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/truveris/goturret"
+	"github.com/maurorappa/goturret"
 	"github.com/truveris/gousb/usb"
 )
 
@@ -110,7 +110,4 @@ func main() {
 		}
 	}
 
-	for _, t := range turrets {
-		t.Shutdown()
-	}
 }

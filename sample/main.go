@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/truveris/goturret"
+	"github.com/maurorappa/goturret"
 	"github.com/truveris/gousb/usb"
 )
 
@@ -25,7 +25,7 @@ func main() {
 	}()
 
 	for _, t := range turrets {
-		t.BlinkOn(4)
+		//t.BlinkOn(4)
 
 		t.Left(1 * time.Second)
 		t.Up(1 * time.Second)
@@ -35,7 +35,4 @@ func main() {
 		t.Light(false)
 	}
 
-	for _, t := range turrets {
-		t.Shutdown()
-	}
 }

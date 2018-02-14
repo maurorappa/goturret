@@ -40,11 +40,12 @@ func NewTurret(dev *usb.Device) *Turret {
 // on using this function concurrently across multiple go-routines, you may
 // want to use the QueueCommand and ConsumeCommands facility instead.
 func (t *Turret) Command(cmdtype, cmd byte) error {
-	if t.Type == DeviceTypeThunder {
-		_, err := t.Device.Control(0x21, 0x09, 0, 0, []byte{cmdtype, cmd, 0, 0, 0, 0, 0, 0})
+//	if t.Type == DeviceTypeThunder {
+		_, err := t.Device.Control(0x21, 0x09, 0x2, 0x00, []byte{cmdtype, cmd, 0, 0, 0, 0, 0, 0})
 		if err != nil {
 			return err
 		}
+/*
 	} else if t.Type == DeviceTypeClassic {
 		if cmdtype != CmdTypeTurret {
 			return errNoLight
@@ -55,7 +56,7 @@ func (t *Turret) Command(cmdtype, cmd byte) error {
 			return err
 		}
 	}
-
+*/
 	return nil
 }
 
